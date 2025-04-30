@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,25 +18,43 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Trophy, User } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { loginWithEmail } from "@/services/authService";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const LoginPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [playerEmail, setPlayerEmail] = useState("");
+  const [playerPassword, setPlayerPassword] = useState("");
+  const [orgEmail, setOrgEmail] = useState("");
+  const [orgPassword, setOrgPassword] = useState("");
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Redirect if user is already logged in
+  if (user) {
+    navigate("/");
+    return null;
+  }
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, isPlayer: boolean) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
-    setTimeout(() => {
+    try {
+      const email = isPlayer ? playerEmail : orgEmail;
+      const password = isPlayer ? playerPassword : orgPassword;
+      
+      await loginWithEmail(email, password);
+      // Successful login will trigger the auth listener and redirect
+    } catch (error) {
+      // Error handling is done in the loginWithEmail function
+      console.error("Login error:", error);
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Login Successful",
-        description: "You have been logged in successfully.",
-      });
-    }, 1500);
+    }
   };
 
   return (
@@ -68,7 +86,7 @@ const LoginPage = () => {
               </TabsList>
               
               <TabsContent value="player">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => handleSubmit(e, true)}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="player-email">Email</Label>
@@ -77,6 +95,8 @@ const LoginPage = () => {
                         type="email"
                         placeholder="name@example.com"
                         required
+                        value={playerEmail}
+                        onChange={(e) => setPlayerEmail(e.target.value)}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -94,6 +114,8 @@ const LoginPage = () => {
                         type="password"
                         placeholder="••••••••"
                         required
+                        value={playerPassword}
+                        onChange={(e) => setPlayerPassword(e.target.value)}
                       />
                     </div>
                     <Button className="w-full bg-esports-purple hover:bg-esports-deep-purple" disabled={isLoading}>
@@ -172,7 +194,7 @@ const LoginPage = () => {
               </TabsContent>
               
               <TabsContent value="organizer">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => handleSubmit(e, false)}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="org-email">Email</Label>
@@ -181,6 +203,8 @@ const LoginPage = () => {
                         type="email"
                         placeholder="name@example.com"
                         required
+                        value={orgEmail}
+                        onChange={(e) => setOrgEmail(e.target.value)}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -198,6 +222,8 @@ const LoginPage = () => {
                         type="password"
                         placeholder="••••••••"
                         required
+                        value={orgPassword}
+                        onChange={(e) => setOrgPassword(e.target.value)}
                       />
                     </div>
                     <Button className="w-full bg-esports-purple hover:bg-esports-deep-purple" disabled={isLoading}>

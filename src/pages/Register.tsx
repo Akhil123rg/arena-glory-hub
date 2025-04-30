@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,23 +28,72 @@ import {
 } from "@/components/ui/select";
 import { Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { signUpWithEmail } from "@/services/authService";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const RegisterPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [game, setGame] = useState("");
+  const [terms, setTerms] = useState(false);
+  
+  const [orgName, setOrgName] = useState("");
+  const [orgContactFirstName, setOrgContactFirstName] = useState("");
+  const [orgContactLastName, setOrgContactLastName] = useState("");
+  const [orgEmail, setOrgEmail] = useState("");
+  const [orgPassword, setOrgPassword] = useState("");
+  const [orgType, setOrgType] = useState("");
+  const [orgTerms, setOrgTerms] = useState(false);
+  
+  // Redirect if user is already logged in
+  if (user) {
+    navigate("/");
+    return null;
+  }
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, isPlayer: boolean) => {
     e.preventDefault();
+    
+    // Check terms agreement
+    if (isPlayer && !terms) {
+      toast({
+        title: "Terms Required",
+        description: "You must agree to the terms of service.",
+        variant: "destructive",
+      });
+      return;
+    } else if (!isPlayer && !orgTerms) {
+      toast({
+        title: "Terms Required",
+        description: "You must agree to the terms of service.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
-    // Simulate registration
-    setTimeout(() => {
+    try {
+      if (isPlayer) {
+        await signUpWithEmail(email, password);
+      } else {
+        await signUpWithEmail(orgEmail, orgPassword);
+      }
+      // Successful signup will either log the user in or require email verification
+    } catch (error) {
+      // Error handling is done in the signUpWithEmail function
+      console.error("Registration error:", error);
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Registration Successful",
-        description: "Your account has been created successfully.",
-      });
-    }, 1500);
+    }
   };
 
   return (
@@ -76,7 +125,7 @@ const RegisterPage = () => {
               </TabsList>
               
               <TabsContent value="player">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => handleSubmit(e, true)}>
                   <div className="grid gap-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
@@ -85,6 +134,8 @@ const RegisterPage = () => {
                           id="first-name"
                           placeholder="Enter your first name"
                           required
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -93,6 +144,8 @@ const RegisterPage = () => {
                           id="last-name"
                           placeholder="Enter your last name"
                           required
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
                         />
                       </div>
                     </div>
@@ -102,6 +155,8 @@ const RegisterPage = () => {
                         id="display-name"
                         placeholder="Choose a display name"
                         required
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -111,6 +166,8 @@ const RegisterPage = () => {
                         type="email"
                         placeholder="name@example.com"
                         required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -120,6 +177,8 @@ const RegisterPage = () => {
                         type="password"
                         placeholder="Create a password"
                         required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
                         Password must be at least 8 characters, include a number and a special character.
@@ -127,7 +186,7 @@ const RegisterPage = () => {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="favorite-game">Primary Game</Label>
-                      <Select>
+                      <Select value={game} onValueChange={setGame}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select your main game" />
                         </SelectTrigger>
@@ -143,7 +202,12 @@ const RegisterPage = () => {
                       </Select>
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
-                      <Checkbox id="terms" required />
+                      <Checkbox 
+                        id="terms" 
+                        checked={terms}
+                        onCheckedChange={(checked) => setTerms(checked === true)}
+                        required 
+                      />
                       <label
                         htmlFor="terms"
                         className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -234,7 +298,7 @@ const RegisterPage = () => {
               </TabsContent>
               
               <TabsContent value="organizer">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => handleSubmit(e, false)}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="org-name">Organization Name</Label>
@@ -242,6 +306,8 @@ const RegisterPage = () => {
                         id="org-name"
                         placeholder="Enter organization name"
                         required
+                        value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -251,6 +317,8 @@ const RegisterPage = () => {
                           id="contact-first-name"
                           placeholder="Contact first name"
                           required
+                          value={orgContactFirstName}
+                          onChange={(e) => setOrgContactFirstName(e.target.value)}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -259,6 +327,8 @@ const RegisterPage = () => {
                           id="contact-last-name"
                           placeholder="Contact last name"
                           required
+                          value={orgContactLastName}
+                          onChange={(e) => setOrgContactLastName(e.target.value)}
                         />
                       </div>
                     </div>
@@ -269,6 +339,8 @@ const RegisterPage = () => {
                         type="email"
                         placeholder="name@example.com"
                         required
+                        value={orgEmail}
+                        onChange={(e) => setOrgEmail(e.target.value)}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -278,6 +350,8 @@ const RegisterPage = () => {
                         type="password"
                         placeholder="Create a password"
                         required
+                        value={orgPassword}
+                        onChange={(e) => setOrgPassword(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
                         Password must be at least 8 characters, include a number and a special character.
@@ -285,7 +359,7 @@ const RegisterPage = () => {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="org-type">Organization Type</Label>
-                      <Select>
+                      <Select value={orgType} onValueChange={setOrgType}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select organization type" />
                         </SelectTrigger>
@@ -299,7 +373,12 @@ const RegisterPage = () => {
                       </Select>
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
-                      <Checkbox id="org-terms" required />
+                      <Checkbox 
+                        id="org-terms" 
+                        checked={orgTerms}
+                        onCheckedChange={(checked) => setOrgTerms(checked === true)}
+                        required 
+                      />
                       <label
                         htmlFor="org-terms"
                         className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
