@@ -149,3 +149,4 @@ const FeaturedTournaments = () => {
 };
 
 export default FeaturedTournaments;
+

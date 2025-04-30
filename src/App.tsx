@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
 import Leaderboards from "./pages/Leaderboards";
 import NotFound from "./pages/NotFound";
+import Tournaments from "./pages/Tournaments";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/leaderboards" element={<Leaderboards />} />
+          <Route path="/tournaments" element={<Tournaments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
