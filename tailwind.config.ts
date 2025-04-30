@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				esports: {
+					purple: '#7E69AB',
+					'deep-purple': '#5D4A88',
+					blue: '#33C3F0',
+					orange: '#F97316',
+					dark: '#1A1F2C',
+					light: '#E5DEFF',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +93,32 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px rgba(126, 105, 171, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 15px rgba(126, 105, 171, 0.8)' 
+					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s infinite',
+				'float': 'float 3s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'hero-pattern': 'linear-gradient(102.3deg, rgba(147,39,143,0.8) 5.9%, rgba(234,172,232,0.8) 64%, rgba(246,219,245,0.8) 89%)',
+				'card-gradient': 'linear-gradient(135deg, #1A1F2C 0%, #2A2D3A 100%)',
+				'tournament-card': 'linear-gradient(225deg, #1A1F2C 0%, #2A2D3A 100%)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
